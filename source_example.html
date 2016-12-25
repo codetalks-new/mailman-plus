@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+    <TITLE> [swift-evolution] What about garbage collection?
+    </TITLE>
+    <LINK REL="Index" HREF="index.html" >
+    <LINK REL="made" HREF="mailto:swift-evolution%40swift.org?Subject=Re:%20Re%3A%20%5Bswift-evolution%5D%20What%20about%20garbage%20collection%3F&In-Reply-To=%3C1E14469E-4DD0-4DBD-A6FE-E90E29FE0E10%40apple.com%3E">
+    <META NAME="robots" CONTENT="index,nofollow">
+    <style type="text/css">
+        pre {
+            white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+        }
+    </style>
+    <META http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <LINK REL="Previous"  HREF="009403.html">
+    <LINK REL="Next"  HREF="009406.html">
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+<H1>[swift-evolution] What about garbage collection?</H1>
+<B>Joe Groff</B>
+<A HREF="mailto:swift-evolution%40swift.org?Subject=Re:%20Re%3A%20%5Bswift-evolution%5D%20What%20about%20garbage%20collection%3F&In-Reply-To=%3C1E14469E-4DD0-4DBD-A6FE-E90E29FE0E10%40apple.com%3E"
+   TITLE="[swift-evolution] What about garbage collection?">jgroff at apple.com
+</A><BR>
+<I>Mon Feb  8 14:11:52 CST 2016</I>
+<P><UL>
+    <LI>Previous message: <A HREF="009403.html">[swift-evolution] What about garbage collection?
+    </A></li>
+    <LI>Next message: <A HREF="009406.html">[swift-evolution] What about garbage collection?
+    </A></li>
+    <LI> <B>Messages sorted by:</B>
+        <a href="date.html#9405">[ date ]</a>
+        <a href="thread.html#9405">[ thread ]</a>
+        <a href="subject.html#9405">[ subject ]</a>
+        <a href="author.html#9405">[ author ]</a>
+    </LI>
+</UL>
+<HR>
+<!--beginarticle-->
+<PRE>
+&gt;<i> On Feb 8, 2016, at 11:56 AM, Félix Cloutier via swift-evolution &lt;<A HREF="https://lists.swift.org/mailman/listinfo/swift-evolution">swift-evolution at swift.org</A>&gt; wrote:
+</I>&gt;<i>
+</I>&gt;<i> Has there been a garbage collection thread so far? I understand that reference counting vs. garbage collection can be a heated debate, but it might be relevant to have it.
+</I>&gt;<i>
+</I>&gt;<i> It seems to me that the two principal upsides of reference counting are that destruction is (essentially) deterministic and performance is more easily predicted. However, it comes with many downsides:
+</I>&gt;<i>
+</I>&gt;<i> object references are expensive to update
+</I>&gt;<i> object references cannot be atomically updated
+</I>&gt;<i> heap fragmentation
+</I>&gt;<i> the closure capture syntax uses up an unreasonable amount of mindshare just because of [weak self]
+</I>&gt;<i>
+</I>&gt;<i> Since Swift doesn't expose memory management operations outside of `autoreleasepool`, it seems to me that you could just drop in a garbage collector instead of reference counting and it would work (for most purposes).
+</I>
+While true in theory, code that relies on destructors to clean up unmanaged resources does not port cleanly to GC as-is in practice. GC of course has its own drawbacks. Heap scanning is expensive, thrashing cache and burning battery. GCs also require higher memory ceiling proportional to the amount of heap actively being used, and GCs suitable for interactive use tend to increase responsiveness at the cost of higher memory use, which has its own second-order energy costs—devices need more RAM, and spend more time swapping or killing, and thus need bigger batteries to refresh all that RAM. ARC interoperates better with unmanaged resources, both non-memory resources like sockets and files and also C-level memory resources. The ARC optimizer and Swift's calling convention also optimize toward reclaiming resources closer to their last use, keeping resource usage low.
+
+-Joe
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.swift.org/pipermail/swift-evolution/attachments/20160208/74b9700d/attachment.html">https://lists.swift.org/pipermail/swift-evolution/attachments/20160208/74b9700d/attachment.html</A>&gt;
+</PRE>
+

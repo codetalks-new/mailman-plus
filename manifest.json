@@ -1,0 +1,19 @@
+{
+  "manifest_version": 2,
+  "name": "Swift mail list plus",
+  "version":"0.1",
+  "description": "Give you a better swift mail list browse experience",
+  "icons":
+  {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://lists.swift.org/*"],
+      "css": ["styles.css"],
+      "js": ["mail.js"]
+    }
+  ]
+}
