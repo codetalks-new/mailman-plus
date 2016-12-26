@@ -24,19 +24,9 @@ String.prototype.refDepth = function () {
 };
 
 function linesOfRefDepth(lines,depth) {
-    // 查找同级引用级别的所有连续行
-    var refLines = [];
-    for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        if(line.refDepth() === depth){
-            refLines.push(line);
-        }else{
-            if(refLines.length > 0){
-                break;
-            }
-        }
-    }
-    return refLines;
+    return lines.filter(function (line) {
+        return line.refDepth() === depth;
+    })
 }
 
 function createRefNode(lines, depth){
@@ -49,7 +39,9 @@ function createRefNode(lines, depth){
     refNode.className = "ref-node-"+depth;
     var refLines = linesOfRefDepth(lines, depth);
 
-    refNode.innerHTML = refLines.join('<br/>');
+    var textNode = document.createElement("P");
+    textNode.innerHTML = refLines.join('<br/>');
+    refNode.appendChild(textNode);
     return refNode;
 }
 
@@ -60,12 +52,12 @@ function createReplyTextNode(lines) {
     return p;
 }
 
-function createFragmentRefNode(lines) {
-    var p = document.createElement("P");
-    p.className = "ref-fragment";
-    p.innerHTML = lines.join('<br/>');
-    return p;
-}
+// function createFragmentRefNode(lines) {
+//     var p = document.createElement("P");
+//     p.className = "ref-fragment";
+//     p.innerHTML = lines.join('<br/>');
+//     return p;
+// }
 
 function createReplyNode(lines) {
     var replyNode = document.createElement("DIV");
@@ -82,13 +74,13 @@ function createReplyNode(lines) {
         }else{
             replyLines.push(line);
             if(refLines.length > 0){
-                replyNode.appendChild(createFragmentRefNode(refLines));
+                replyNode.appendChild(createRefNode(refLines, 1));
                 refLines = [];
             }
         }
     }
     if(refLines.length > 0){
-        replyNode.appendChild(createFragmentRefNode(refLines));
+        replyNode.appendChild(createRefNode(refLines, 1));
     }
     if(replyLines.length > 0){
         replyNode.appendChild(createReplyTextNode(replyLines));
@@ -111,21 +103,9 @@ function parseMailRawContent(rawContent){
     var nextPartContent = textContent.substr(divideIndex + flagLine.length);
     var mailBody = textContent.substring(0, divideIndex);
     var rawLines = mailBody.split('\n');
-    var refLines = [];
-    for (var i = 0; i < rawLines.length; i++) {
-        var line = rawLines[i];
-        if(line.isRefLine()){
-            refLines.push(line);
-        }else{
-            break;
-        }
-
-    }
-    var replyPartLines = rawLines.slice(refLines.length);
     return {
         nextPart: nextPartContent,
-        refPartLines:refLines,
-        replyPartLines:replyPartLines
+        rawLines:rawLines
     }
 }
 
@@ -133,12 +113,7 @@ function beautifyMailBody() {
     var mailBodyPre = document.getElementsByTagName("pre")[0];
     var mailInfo = parseMailRawContent(mailBodyPre.textContent);
     var newContentNode = document.createElement("DIV");
-    if(mailInfo.refPartLines.length > 0){
-        var refNode = createRefNode(mailInfo.refPartLines, 1);
-        newContentNode.appendChild(refNode);
-    }
-
-    var replyNode = createReplyNode(mailInfo.replyPartLines);
+    var replyNode = createReplyNode(mailInfo.rawLines);
     newContentNode.appendChild(replyNode);
     newContentNode.appendChild(createNextPartNode(mailInfo.nextPart));
 
@@ -159,9 +134,18 @@ function beatifyNavLinks() {
     navs[0].style.display = "none";
 }
 
+function isMailDetailPage() {
+    var comps = location.pathname.split('/');
+    var lastPath = comps[comps.length - 1];
+    var resName = lastPath.split(".")[0];
+    return /^\d+$/.test(resName);
+}
+
 function main() {
-    beautifyMailBody();
-    beatifyNavLinks()
+    if(isMailDetailPage()){
+        beautifyMailBody();
+        beatifyNavLinks()
+    }
 }
 
 main();

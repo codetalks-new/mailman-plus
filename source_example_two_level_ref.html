@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+    <TITLE> [swift-evolution] What about garbage collection?
+    </TITLE>
+    <LINK REL="Index" HREF="index.html" >
+    <LINK REL="made" HREF="mailto:swift-evolution%40swift.org?Subject=Re:%20Re%3A%20%5Bswift-evolution%5D%20What%20about%20garbage%20collection%3F&In-Reply-To=%3CF04E7F0B-E519-404B-9789-E95B29E8996A%40gmail.com%3E">
+    <META NAME="robots" CONTENT="index,nofollow">
+    <style type="text/css">
+        pre {
+            white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+        }
+    </style>
+    <META http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <LINK REL="Previous"  HREF="009405.html">
+    <LINK REL="Next"  HREF="009407.html">
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+<H1>[swift-evolution] What about garbage collection?</H1>
+<B>Goffredo Marocchi</B>
+<A HREF="mailto:swift-evolution%40swift.org?Subject=Re:%20Re%3A%20%5Bswift-evolution%5D%20What%20about%20garbage%20collection%3F&In-Reply-To=%3CF04E7F0B-E519-404B-9789-E95B29E8996A%40gmail.com%3E"
+   TITLE="[swift-evolution] What about garbage collection?">panajev at gmail.com
+</A><BR>
+<I>Mon Feb  8 14:26:44 CST 2016</I>
+<P><UL>
+    <LI>Previous message: <A HREF="009405.html">[swift-evolution] What about garbage collection?
+    </A></li>
+    <LI>Next message: <A HREF="009407.html">[swift-evolution] What about garbage collection?
+    </A></li>
+    <LI> <B>Messages sorted by:</B>
+        <a href="date.html#9406">[ date ]</a>
+        <a href="thread.html#9406">[ thread ]</a>
+        <a href="subject.html#9406">[ subject ]</a>
+        <a href="author.html#9406">[ author ]</a>
+    </LI>
+</UL>
+<HR>
+<!--beginarticle-->
+<PRE>Devices being able to house a compact amount of RAM is a device vendor concern not a Swift one although the former kind of owns the latter, but that is being a bit cheeky I will admit that ;).
+
+Still, iPhone 6 Plus only having 1 GB of RAM... Grrrr... :P. Seriously, multitasking suffers greatly on that device as well as having multiple opened tabs on Safari...
+
+Sent from my iPhone
+
+&gt;<i> On 8 Feb 2016, at 20:11, Joe Groff via swift-evolution &lt;<A HREF="https://lists.swift.org/mailman/listinfo/swift-evolution">swift-evolution at swift.org</A>&gt; wrote:
+</I>&gt;<i>
+</I>&gt;<i>
+</I>&gt;&gt;<i> On Feb 8, 2016, at 11:56 AM, Félix Cloutier via swift-evolution &lt;<A HREF="https://lists.swift.org/mailman/listinfo/swift-evolution">swift-evolution at swift.org</A>&gt; wrote:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Has there been a garbage collection thread so far? I understand that reference counting vs. garbage collection can be a heated debate, but it might be relevant to have it.
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> It seems to me that the two principal upsides of reference counting are that destruction is (essentially) deterministic and performance is more easily predicted. However, it comes with many downsides:
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> object references are expensive to update
+</I>&gt;&gt;<i> object references cannot be atomically updated
+</I>&gt;&gt;<i> heap fragmentation
+</I>&gt;&gt;<i> the closure capture syntax uses up an unreasonable amount of mindshare just because of [weak self]
+</I>&gt;&gt;<i>
+</I>&gt;&gt;<i> Since Swift doesn't expose memory management operations outside of `autoreleasepool`, it seems to me that you could just drop in a garbage collector instead of reference counting and it would work (for most purposes).
+</I>&gt;<i>
+</I>&gt;<i> While true in theory, code that relies on destructors to clean up unmanaged resources does not port cleanly to GC as-is in practice. GC of course has its own drawbacks. Heap scanning is expensive, thrashing cache and burning battery. GCs also require higher memory ceiling proportional to the amount of heap actively being used, and GCs suitable for interactive use tend to increase responsiveness at the cost of higher memory use, which has its own second-order energy costs—devices need more RAM, and spend more time swapping or killing, and thus need bigger batteries to refresh all that RAM. ARC interoperates better with unmanaged resources, both non-memory resources like sockets and files and also C-level memory resources. The ARC optimizer and Swift's calling convention also optimize toward reclaiming resources closer to their last use, keeping resource usage low.
+</I>&gt;<i>
+</I>&gt;<i> -Joe
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> swift-evolution mailing list
+</I>&gt;<i> <A HREF="https://lists.swift.org/mailman/listinfo/swift-evolution">swift-evolution at swift.org</A>
+</I>&gt;<i> <A HREF="https://lists.swift.org/mailman/listinfo/swift-evolution">https://lists.swift.org/mailman/listinfo/swift-evolution</A>
+</I>-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.swift.org/pipermail/swift-evolution/attachments/20160208/2bdcbbb7/attachment.html">https://lists.swift.org/pipermail/swift-evolution/attachments/20160208/2bdcbbb7/attachment.html</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+<HR>
+<P><UL>
+    <!--threads-->
+    <LI>Previous message: <A HREF="009405.html">[swift-evolution] What about garbage collection?
+    </A></li>
+    <LI>Next message: <A HREF="009407.html">[swift-evolution] What about garbage collection?
+    </A></li>
+    <LI> <B>Messages sorted by:</B>
+        <a href="date.html#9406">[ date ]</a>
+        <a href="thread.html#9406">[ thread ]</a>
+        <a href="subject.html#9406">[ subject ]</a>
+        <a href="author.html#9406">[ author ]</a>
+    </LI>
+</UL>
+
+<hr>
+<a href="https://lists.swift.org/mailman/listinfo/swift-evolution">More information about the swift-evolution
+    mailing list</a><br>
+</body></html>
