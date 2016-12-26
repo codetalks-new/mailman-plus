@@ -49,7 +49,9 @@ function createReplyNode(lines) {
 
 function main() {
     var mailBodyPre = document.getElementsByTagName("pre")[0];
-    var rawLines = mailBodyPre.textContent.split('\n');
+    var textContent = mailBodyPre.textContent;
+    textContent = textContent.replace(/<(.*)>/g,"&lt;$1&gt;");
+    var rawLines = textContent.split('\n');
     var newContentNode = document.createElement("DIV");
     var refNode = createRefNode(rawLines, 1);
     var replyNode = createReplyNode(rawLines);
@@ -58,7 +60,11 @@ function main() {
     newContentNode.appendChild(replyNode);
 
     var body = mailBodyPre.parentNode;
-    body.appendChild(newContentNode);
+    if(mailBodyPre.nextSibling){
+       body.insertBefore(newContentNode, mailBodyPre.nextSibling);
+    }else {
+        body.appendChild(newContentNode);
+    }
     mailBodyPre.style.display = "none";
 }
 
