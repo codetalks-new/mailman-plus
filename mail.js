@@ -47,25 +47,49 @@ function createReplyNode(lines) {
     return replyNode;
 }
 
-function main() {
+function createNextPartNode(nextPart) {
+    var nextPartNode = document.createElement("DIV");
+    nextPartNode.className = "next-part";
+    nextPartNode.innerHTML = nextPart.split("\n").join("<br/>");
+    return nextPartNode;
+}
+
+function beautifyMailBody() {
     var mailBodyPre = document.getElementsByTagName("pre")[0];
     var textContent = mailBodyPre.textContent;
     textContent = textContent.replace(/<(.*)>/g,"&lt;$1&gt;");
-    var rawLines = textContent.split('\n');
+    var flagLine = "-------------- next part --------------";
+    var divideIndex = textContent.indexOf(flagLine);
+    var nextPartContent = textContent.substr(divideIndex + flagLine.length);
+    var mailBody = textContent.substring(0, divideIndex);
+    var rawLines = mailBody.split('\n');
     var newContentNode = document.createElement("DIV");
     var refNode = createRefNode(rawLines, 1);
     var replyNode = createReplyNode(rawLines);
 
     newContentNode.appendChild(refNode);
     newContentNode.appendChild(replyNode);
+    newContentNode.appendChild(createNextPartNode(nextPartContent));
 
     var body = mailBodyPre.parentNode;
     if(mailBodyPre.nextSibling){
-       body.insertBefore(newContentNode, mailBodyPre.nextSibling);
+        body.insertBefore(newContentNode, mailBodyPre.nextSibling);
     }else {
         body.appendChild(newContentNode);
     }
     mailBodyPre.style.display = "none";
+}
+
+function beatifyNavLinks() {
+    var navs = document.getElementsByTagName("ul");
+    Array.prototype.forEach.call(navs, function (nav) {
+       nav.className += " nav"
+    });
+}
+
+function main() {
+    beautifyMailBody();
+    beatifyNavLinks()
 }
 
 main();

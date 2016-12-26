@@ -41,16 +41,31 @@ a{
     font-style: italic;
 }
 
-.ref-node-1{ background: #eee; }
-.ref-node-2{ background: #ddd; }
-.ref-node-3{ background: #ccc; }
-.ref-node-4{ background: #bbb; }
-.ref-node-5{ background: #aaa; }
+.ref-node-1{ background: #eee; color: #988;}
+.ref-node-2{ background: #ddd; color: #877;}
+.ref-node-3{ background: #ccc; color: #866;}
+.ref-node-4{ background: #bbb; color: #755}
+.ref-node-5{ background: #aaa; color:#644;}
 
 .reply{
-    color:#366b78;
+    color: #273e4f;
     font-size: 1.0em;
     padding: 1em;
+}
+
+.nav{
+    font-size: 0.9em;
+    padding:0.5em 1em;
+    background: #efefef;
+}
+.nav li{
+    list-style-type: none;
+}
+
+.next-part{
+    font-size:0.9em;
+    color:#999;
+    padding-left: 1em;
 }
 
 
