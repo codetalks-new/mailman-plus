@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+    <TITLE> [swift-evolution] What about garbage collection?
+    </TITLE>
+    <LINK REL="Index" HREF="index.html" >
+    <LINK REL="made" HREF="mailto:swift-evolution%40swift.org?Subject=Re:%20Re%3A%20%5Bswift-evolution%5D%20What%20about%20garbage%20collection%3F&In-Reply-To=%3CE447E7AB-81C4-4295-9E91-5A970622E7F5%40apple.com%3E">
+    <META NAME="robots" CONTENT="index,nofollow">
+    <style type="text/css">
+        pre {
+            white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+        }
+    </style>
+    <META http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <LINK REL="Previous"  HREF="009421.html">
+    <LINK REL="Next"  HREF="009437.html">
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+<H1>[swift-evolution] What about garbage collection?</H1>
+<B>Chris Lattner</B>
+<A HREF="mailto:swift-evolution%40swift.org?Subject=Re:%20Re%3A%20%5Bswift-evolution%5D%20What%20about%20garbage%20collection%3F&In-Reply-To=%3CE447E7AB-81C4-4295-9E91-5A970622E7F5%40apple.com%3E"
+   TITLE="[swift-evolution] What about garbage collection?">clattner at apple.com
+</A><BR>
+<I>Mon Feb  8 15:00:57 CST 2016</I>
+<P><UL>
+    <LI>Previous message: <A HREF="009421.html">[swift-evolution] What about garbage collection?
+    </A></li>
+    <LI>Next message: <A HREF="009437.html">[swift-evolution] What about garbage collection?
+    </A></li>
+    <LI> <B>Messages sorted by:</B>
+        <a href="date.html#9422">[ date ]</a>
+        <a href="thread.html#9422">[ thread ]</a>
+        <a href="subject.html#9422">[ subject ]</a>
+        <a href="author.html#9422">[ author ]</a>
+    </LI>
+</UL>
+<HR>
+<!--beginarticle-->
+<PRE>On Feb 8, 2016, at 11:56 AM, Félix Cloutier via swift-evolution &lt;<A HREF="https://lists.swift.org/mailman/listinfo/swift-evolution">swift-evolution at swift.org</A>&gt; wrote:
+&gt;<i> Has there been a garbage collection thread so far? I understand that reference counting vs. garbage collection can be a heated debate, but it might be relevant to have it.
+</I>
+Technically speaking, reference counting is a form of garbage collection, but I get what you mean.  Since there are multiple forms of GC, I'll assume that you mean a generational mark and sweep algorithm like you’d see in a Java implementation.
+
+&gt;<i> It seems to me that the two principal upsides of reference counting are that destruction is (essentially) deterministic and performance is more easily predicted.
+</I>
+Yes, deterministic destruction is a major feature.  Not having to explain what finalizers are (and why they shouldn’t generally be used) is a pretty huge.  Keep in mind that Swift interops with C, so deinit is unavoidable for certain types.
+
+More pointedly, not relying on GC enables Swift to be used in domains that don’t want it - think boot loaders, kernels, real time systems like audio processing, etc.
+
+We have discussed in the passed using hybrid approaches like introducing a cycle collector, which runs less frequently than a GC would.  The problem with this is that if you introduce a cycle collector, code will start depending on it. In time you end up with some libraries/packages that works without GC, and others that leak without it (the D community has relevant experience here).  As such, we have come to think that adding a cycle collector would be bad for the Swift community in the large.
+
+&gt;<i> However, it comes with many downsides:
+</I>&gt;<i>
+</I>&gt;<i> object references are expensive to update
+</I>
+Most garbage collectors have write barriers, which execute extra code when references are updated.  Most garbage collectors also have safe points, which means that extra instructions get inserted into loops.
+
+&gt;<i> object references cannot be atomically updated
+</I>
+This is true, but Swift currently has no memory model and no concurrency model, so it isn’t clear that this is actually important (e.g. if you have no shared mutable state).
+
+&gt;<i> heap fragmentation
+</I>
+This is at best a tradeoff depending on what problem you’re trying to solve (e.g. better cache locality or smaller max RSS of the process).  One thing that I don’t think is debatable is that the heap compaction behavior of a GC (which is what provides the heap fragmentation win) is incredibly hostile for cache (because it cycles the entire memory space of the process) and performance predictability.
+
+Given that GC’s use a lot more memory than ARC systems do, it isn’t clear what you mean by GC’s winning on heap fragmentation.
+
+&gt;<i> the closure capture syntax uses up an unreasonable amount of mindshare just because of [weak self]
+</I>
+I think that this specific point is solvable in others ways, but I’ll interpret this bullet as saying that you don’t want to worry about weak/unowned pointers.  I completely agree that we strive to provide a simple programming model, and I can see how &quot;not having to think about memory management&quot; seems appealing.
+
+On the other hand, there are major advantages to the Swift model.  Unlike MRR, Swift doesn’t require you to micromanage memory: you think about it at the object graph level when you’re building out your types.  Compared to MRR, ARC has moved memory management from being imperative to being declarative.  Swift also puts an emphasis on value types, so certain problems that you’d see in languages like Java are reduced.
+
+That said, it is clear that it takes time and thought to use weak/unowned pointers correctly, so the question really becomes: does reasoning about your memory at the object graph level and expressing things in a declarative way contribute positively to your code?
+
+My opinion is yes: while I think it is silly to micromanage memory, I do think thinking about it some is useful. I think that expressing that intention directly in the code adds value in terms of maintenance of the code over time and communication to other people who work on it.
+
+&gt;<i> Since Swift doesn't expose memory management operations outside of `autoreleasepool`, it seems to me that you could just drop in a garbage collector instead of reference counting and it would work (for most purposes).
+</I>&gt;<i>
+</I>&gt;<i> Has a GC been considered at all?
+</I>
+GC also has several *huge* disadvantages that are usually glossed over: while it is true that modern GC's can provide high performance, they can only do that when they are granted *much* more memory than the process is actually using.  Generally, unless you give the GC 3-4x more memory than is needed, you’ll get thrashing and incredibly poor performance.  Additionally, since the sweep pass touches almost all RAM in the process, they tend to be very power inefficient (leading to reduced battery life).
+
+I’m personally not interested in requiring a model that requires us to throw away a ton of perfectly good RAM to get an “simpler&quot; programming model - particularly on that adds so many tradeoffs.
+
+-Chris
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: &lt;<A HREF="https://lists.swift.org/pipermail/swift-evolution/attachments/20160208/9d99990e/attachment.html">https://lists.swift.org/pipermail/swift-evolution/attachments/20160208/9d99990e/attachment.html</A>&gt;
+</PRE>
+
+
+<!--endarticle-->
+<HR>
+<P><UL>
+    <!--threads-->
+    <LI>Previous message: <A HREF="009421.html">[swift-evolution] What about garbage collection?
+    </A></li>
+    <LI>Next message: <A HREF="009437.html">[swift-evolution] What about garbage collection?
+    </A></li>
+    <LI> <B>Messages sorted by:</B>
+        <a href="date.html#9422">[ date ]</a>
+        <a href="thread.html#9422">[ thread ]</a>
+        <a href="subject.html#9422">[ subject ]</a>
+        <a href="author.html#9422">[ author ]</a>
+    </LI>
+</UL>
+
+<hr>
+<a href="https://lists.swift.org/mailman/listinfo/swift-evolution">More information about the swift-evolution
+    mailing list</a><br>
+</body></html>
+

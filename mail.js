@@ -2,11 +2,15 @@
  * Created by banxi on 12/25/16.
  */
 
+String.prototype.isRefLine = function () {
+  var str = this.trim();
+  return str.length > 0 && str[0] === '>'
+};
 
-function refDepth(line){
-   var depth = 0;
-    for (var i = 0; i < line.length; i++) {
-        var ch = line[i];
+String.prototype.refDepth = function () {
+    var depth = 0;
+    for (var i = 0; i < this.length; i++) {
+        var ch = this[i];
         if(ch === ' '){
             continue;
         }
@@ -17,32 +21,78 @@ function refDepth(line){
         }
     }
     return depth;
+};
+
+function linesOfRefDepth(lines,depth) {
+    // 查找同级引用级别的所有连续行
+    var refLines = [];
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if(line.refDepth() === depth){
+            refLines.push(line);
+        }else{
+            if(refLines.length > 0){
+                break;
+            }
+        }
+    }
+    return refLines;
 }
 
 function createRefNode(lines, depth){
     var refNode = document.createElement("DIV");
-    var innerRefLines = lines.filter(function (line) {
-        return refDepth(line) === depth + 1;
-    });
+    var innerRefLines = linesOfRefDepth(lines, depth + 1) ;
     if (innerRefLines.length > 0){
         var innerRefNode = createRefNode(lines, depth + 1);
         refNode.appendChild(innerRefNode);
     }
     refNode.className = "ref-node-"+depth;
-    var refLines = lines.filter(function (line) {
-        return refDepth(line) === depth;
-    });
+    var refLines = linesOfRefDepth(lines, depth);
 
     refNode.innerHTML = refLines.join('<br/>');
     return refNode;
 }
 
+function createReplyTextNode(lines) {
+    var p = document.createElement("P");
+    p.innerHTML = lines.join('<br/>');
+    p.className = "reply-text";
+    return p;
+}
+
+function createFragmentRefNode(lines) {
+    var p = document.createElement("P");
+    p.className = "ref-fragment";
+    p.innerHTML = lines.join('<br/>');
+    return p;
+}
+
 function createReplyNode(lines) {
-    var replyLines = lines.filter(function (line) {
-        return refDepth(line) === 0;
-    });
     var replyNode = document.createElement("DIV");
-    replyNode.innerHTML = replyLines.join("<br/>");
+    var refLines = [];
+    var replyLines = [];
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if(line.isRefLine()){
+            refLines.push(line);
+            if(replyLines.length > 0){
+                replyNode.appendChild(createReplyTextNode(replyLines));
+                replyLines = [];
+            }
+        }else{
+            replyLines.push(line);
+            if(refLines.length > 0){
+                replyNode.appendChild(createFragmentRefNode(refLines));
+                refLines = [];
+            }
+        }
+    }
+    if(refLines.length > 0){
+        replyNode.appendChild(createFragmentRefNode(refLines));
+    }
+    if(replyLines.length > 0){
+        replyNode.appendChild(createReplyTextNode(replyLines));
+    }
     replyNode.className = "reply";
     return replyNode;
 }
@@ -54,22 +104,43 @@ function createNextPartNode(nextPart) {
     return nextPartNode;
 }
 
-function beautifyMailBody() {
-    var mailBodyPre = document.getElementsByTagName("pre")[0];
-    var textContent = mailBodyPre.textContent;
-    textContent = textContent.replace(/<(.*)>/g,"&lt;$1&gt;");
+function parseMailRawContent(rawContent){
+    var textContent = rawContent.replace(/<(.*)>/g,"&lt;$1&gt;");
     var flagLine = "-------------- next part --------------";
     var divideIndex = textContent.indexOf(flagLine);
     var nextPartContent = textContent.substr(divideIndex + flagLine.length);
     var mailBody = textContent.substring(0, divideIndex);
     var rawLines = mailBody.split('\n');
-    var newContentNode = document.createElement("DIV");
-    var refNode = createRefNode(rawLines, 1);
-    var replyNode = createReplyNode(rawLines);
+    var refLines = [];
+    for (var i = 0; i < rawLines.length; i++) {
+        var line = rawLines[i];
+        if(line.isRefLine()){
+            refLines.push(line);
+        }else{
+            break;
+        }
 
-    newContentNode.appendChild(refNode);
+    }
+    var replyPartLines = rawLines.slice(refLines.length);
+    return {
+        nextPart: nextPartContent,
+        refPartLines:refLines,
+        replyPartLines:replyPartLines
+    }
+}
+
+function beautifyMailBody() {
+    var mailBodyPre = document.getElementsByTagName("pre")[0];
+    var mailInfo = parseMailRawContent(mailBodyPre.textContent);
+    var newContentNode = document.createElement("DIV");
+    if(mailInfo.refPartLines.length > 0){
+        var refNode = createRefNode(mailInfo.refPartLines, 1);
+        newContentNode.appendChild(refNode);
+    }
+
+    var replyNode = createReplyNode(mailInfo.replyPartLines);
     newContentNode.appendChild(replyNode);
-    newContentNode.appendChild(createNextPartNode(nextPartContent));
+    newContentNode.appendChild(createNextPartNode(mailInfo.nextPart));
 
     var body = mailBodyPre.parentNode;
     if(mailBodyPre.nextSibling){
@@ -85,6 +156,7 @@ function beatifyNavLinks() {
     Array.prototype.forEach.call(navs, function (nav) {
        nav.className += " nav"
     });
+    navs[0].style.display = "none";
 }
 
 function main() {

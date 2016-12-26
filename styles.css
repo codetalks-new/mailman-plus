@@ -33,7 +33,7 @@ a{
     color: #e81c4f;
 }
 
-[class^=ref-node-]{
+[class^=ref-node-], .ref-fragment{
     padding: 1em;
     border-left: 2px solid #69c;
     line-height:1.3;
@@ -41,11 +41,11 @@ a{
     font-style: italic;
 }
 
-.ref-node-1{ background: #eee; color: #988;}
-.ref-node-2{ background: #ddd; color: #877;}
-.ref-node-3{ background: #ccc; color: #866;}
-.ref-node-4{ background: #bbb; color: #755}
-.ref-node-5{ background: #aaa; color:#644;}
+.ref-node-1{ background: #eee; color: #777;}
+.ref-node-2{ background: #ddd; color: #666;}
+.ref-node-3{ background: #ccc; color: #555;}
+.ref-node-4,
+.ref-node-5{ background: #bbb; color:#444;}
 
 .reply{
     color: #273e4f;
@@ -53,6 +53,12 @@ a{
     padding: 1em;
 }
 
+.ref-fragment{
+    background: #eee; color:#888;
+}
+p.reply-text{
+    padding-top:4px;
+}
 .nav{
     font-size: 0.9em;
     padding:0.5em 1em;
