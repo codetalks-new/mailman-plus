@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Swift mail list plus",
-  "version":"0.1",
-  "description": "Give you a better swift mail list browse experience",
+  "name": "mailman plus",
+  "version":"0.1.2",
+  "description": "Give you a better  mailman list browse experience",
   "icons":
   {
     "16": "icon16.png",
@@ -11,7 +11,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://lists.swift.org/pipermail/*"],
+      "matches": ["https://*/pipermail/*"],
       "css": ["styles.css"],
       "js": ["mail.js"]
     }
