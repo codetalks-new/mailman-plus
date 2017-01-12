@@ -100,6 +100,11 @@ function parseMailRawContent(rawContent){
     var textContent = rawContent.replace(/<(.*)>/g,"&lt;$1&gt;");
     var flagLine = "-------------- next part --------------";
     var divideIndex = textContent.indexOf(flagLine);
+    if(divideIndex < 0){
+        return {
+            rawLines:textContent.split('\n')
+        }
+    }
     var nextPartContent = textContent.substr(divideIndex + flagLine.length);
     var mailBody = textContent.substring(0, divideIndex);
     var rawLines = mailBody.split('\n');
@@ -115,7 +120,9 @@ function beautifyMailBody() {
     var newContentNode = document.createElement("DIV");
     var replyNode = createReplyNode(mailInfo.rawLines);
     newContentNode.appendChild(replyNode);
-    newContentNode.appendChild(createNextPartNode(mailInfo.nextPart));
+    if(mailInfo.nextPart){
+        newContentNode.appendChild(createNextPartNode(mailInfo.nextPart));
+    }
 
     var body = mailBodyPre.parentNode;
     if(mailBodyPre.nextSibling){
